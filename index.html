@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KinematicLab // Estación de Control Robótico RRR</title>
+    <!-- Fuentes de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- 1. CABECERA INDUSTRIAL -->
+        <header class="app-header">
+            <div class="logo-section">
+                <div class="status-indicator">
+                    <span class="status-dot pulse" id="status-dot"></span>
+                    <span class="status-text" id="status-label">SISTEMA SEGURO</span>
+                </div>
+                <h1>Kinematic<span>Lab</span> <small>v2.5</small></h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn-action secondary" id="btn-theme-toggle">Tema</button>
+                <button class="btn-action accent" id="btn-export">Copiar Matriz</button>
+            </div>
+        </header>
+
+        <!-- 2. CUERPO PRINCIPAL (2 Columnas) -->
+        <main class="main-grid">
+
+            <!-- Columna Izquierda: El Lienzo y Controles de Poses -->
+            <section class="card canvas-card">
+                <div class="card-header">
+                    <h2>Simulación Gráfica 2D / Espejo</h2>
+                    <div class="card-tools">
+                        <button class="btn-xs" id="btn-clear-trail">Limpiar Estela</button>
+                        <span class="badge">Plano X-Y</span>
+                    </div>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="robotCanvas" width="650" height="650"></canvas>
+                </div>
+                <!-- Botones de Poses Predefinidas -->
+                <div class="presets-row">
+                    <button class="btn-preset" id="btn-reset">Posición Reposo</button>
+                    <button class="btn-preset" id="btn-extended">Brazo Extendido</button>
+                    <button class="btn-preset" id="btn-elbow">Flexión Superior</button>
+                </div>
+            </section>
+            <!-- Sección de Grabador de Trayectorias (Waypoints) -->
+                <div class="control-group" style="margin-top: 15px;">
+                    <div class="control-label-row">
+                        <span>Grabador de Trayectorias (Teach Pendant)</span>
+                        <span id="waypoint-count" class="val-box">0 guardados</span>
+                    </div>
+                    <div class="presets-row" style="margin-bottom: 8px;">
+                        <button id="btn-save-waypoint" class="btn-action accent" style="flex: 1; padding: 8px;">+ Guardar Pose</button>
+                        <button id="btn-play-path" class="btn-action" style="flex: 1; border-color: var(--accent-secondary); color: var(--accent-secondary);">▶ Reproducir</button>
+                    </div>
+                    <button id="btn-clear-waypoints" class="btn-xs" style="width: 100%;">Limpiar Poses Grabadas</button>
+                </div>
+
+            <!-- Columna Derecha: Panel de Control de Articulaciones -->
+            <section class="card controls-card">
+                <div class="card-header">
+                    <h2>Panel de Control Articular</h2>
+                    <span class="badge tech">Cinemática RRR</span>
+                </div>
+                
+                <div class="sliders-container">
+                    
+                    <!-- Base: Botones de dirección limpios y profesionales -->
+                    <div class="control-group base-control-box">
+                        <div class="control-label-row">
+                            <label>&theta;₀ (Orientación de Base)</label>
+                            <span class="val-box"><strong id="val-theta0">0</strong>&deg;</span>
+                        </div>
+                        <div class="base-buttons-row">
+                            <button class="btn-arrow" id="btn-base-left" title="Girar a la Izquierda">
+                                <span>&larr;</span> Izquierda
+                            </button>
+                            <button class="btn-arrow" id="btn-base-center" title="Centrar Base">
+                                <span>&bull;</span> Centro
+                            </button>
+                            <button class="btn-arrow" id="btn-base-right" title="Girar a la Derecha">
+                                Derecha <span>&rarr;</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Articulación 1 (0° a 180°) -->
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="theta1">&theta;₁ (Articulación Base-Hombro)</label>
+                            <span class="val-box"><strong id="val-theta1">90</strong>&deg;</span>
+                        </div>
+                        <input type="range" id="theta1" min="0" max="180" value="90" class="tech-slider">
+                    </div>
+
+                    <!-- Articulación 2 (45° a 90°) -->
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="theta2">&theta;₂ (Articulación Codo)</label>
+                            <span class="val-box"><strong id="val-theta2">45</strong>&deg;</span>
+                        </div>
+                        <input type="range" id="theta2" min="45" max="90" value="45" class="tech-slider">
+                    </div>
+
+                    <!-- Articulación 3 (45° a 90°) -->
+                    <div class="control-group">
+                        <div class="control-label-row">
+                            <label for="theta3">&theta;₃ (Articulación Muñeca)</label>
+                            <span class="val-box"><strong id="val-theta3">45</strong>&deg;</span>
+                        </div>
+                        <input type="range" id="theta3" min="45" max="90" value="45" class="tech-slider">
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- 3. BLOQUE INFERIOR (Telemetría y Matemáticas) -->
+        <section class="bottom-grid">
+            
+            <!-- Estado del Efector -->
+            <div class="card telemetry-card">
+                <h3>Telemetría del Efector Final</h3>
+                <div class="telemetry-metrics">
+                    <div class="metric">
+                        <span class="m-label">Posición X</span>
+                        <span class="m-val" id="pos-x">0.00</span> <small>px</small>
+                    </div>
+                    <div class="metric">
+                        <span class="m-label">Posición Y</span>
+                        <span class="m-val" id="pos-y">0.00</span> <small>px</small>
+                    </div>
+                    <div class="metric">
+                        <span class="m-label">Orientación Total (&varphi;)</span>
+                        <span class="m-val" id="pos-phi">0.00&deg;</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fila de Ingeniería -->
+            <div class="engineering-grid">
+                
+                <!-- Parámetros D-H -->
+                <div class="card">
+                    <h3>Parámetros Denavit-Hartenberg</h3>
+                    <div class="table-wrapper">
+                        <table class="dh-table">
+                            <thead>
+                                <tr><th>i</th><th>&theta;ᵢ</th><th>dᵢ</th><th>aᵢ</th><th>&alpha;ᵢ</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><strong>1</strong></td><td>&theta;₁</td><td>0</td><td>L₁</td><td>0°</td></tr>
+                                <tr><td><strong>2</strong></td><td>&theta;₂</td><td>0</td><td>L₂</td><td>0°</td></tr>
+                                <tr><td><strong>3</strong></td><td>&theta;₃</td><td>0</td><td>L₃</td><td>0°</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Matriz Homogénea -->
+                <div class="card">
+                    <h3>Matriz de Transformación Homogénea</h3>
+                    <div class="matrix-display">
+                        <span class="matrix-bracket">[</span>
+                        <div class="matrix-content">
+                            <div class="matrix-row"><span>R₁₁</span><span>R₁₂</span><span>0</span><span id="mat-px">Pₓ</span></div>
+                            <div class="matrix-row"><span>R₂₁</span><span>R₂₂</span><span>0</span><span id="mat-py">Pᵧ</span></div>
+                            <div class="matrix-row"><span>0</span><span>0</span><span>1</span><span>0</span></div>
+                            <div class="matrix-row"><span>0</span><span>0</span><span>0</span><span>1</span></div>
+                        </div>
+                        <span class="matrix-bracket">]</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- Notificación Toast flotante -->
+    <div id="toast" class="toast">¡Datos copiados al portapapeles!</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
