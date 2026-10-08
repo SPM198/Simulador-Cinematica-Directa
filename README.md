@@ -4,7 +4,7 @@ Simulador web interactivo de un brazo robótico articulado de 3 grados de libert
 
 ## Características Principales
 
-- **Cinemática Directa e Inversa (IK):** Control articular mediante deslizadores o cálculo analítico en tiempo real haciendo clic directamente sobre el lienzo de trabajo.
+- **Cinemática Directa (IK):** Control articular mediante deslizadores o cálculo analítico en tiempo real haciendo clic directamente sobre el lienzo de trabajo.
 - **Grabador de Trayectorias (Teach Pendant):** Almacenamiento de múltiples poses (waypoints) y reproducción autónoma mediante interpolación suave con curvas.
 - **Suavizado de Movimiento (LERP):** Implementación de inercia y transiciones fluidas entre configuraciones mecánicas.
 - **Telemetría y Cinemática:** Visualización dinámica de las coordenadas del efector final, orientación y la Matriz Homogénea $T_0^3$.
